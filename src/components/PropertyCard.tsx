@@ -1,9 +1,11 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Property } from '../data/properties';
 import { useGame } from '../context/GameContext';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
+import { Progress } from './ui/progress';
+import { Clock } from 'lucide-react';
 
 interface PropertyCardProps {
   property: Property;
@@ -12,8 +14,45 @@ interface PropertyCardProps {
 const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
   const { buyProperty, money, ownedProperties, collectRent } = useGame();
   const canBuy = money >= property.cost;
-  
   const isOwned = ownedProperties.some(p => p.id === property.id);
+  
+  // Progress state for timer
+  const [progress, setProgress] = useState(0);
+  const [timerRunning, setTimerRunning] = useState(isOwned);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout | null = null;
+    
+    if (isOwned && timerRunning) {
+      // Reset progress when timer starts
+      setProgress(0);
+      
+      // Calculate time interval based on property.time
+      const interval = (property.time * 1000) / 100; // Divide property time into 100 steps
+      
+      timer = setInterval(() => {
+        setProgress(prevProgress => {
+          const newProgress = prevProgress + 1;
+          if (newProgress >= 100) {
+            // Reset timer when complete
+            setTimerRunning(false);
+            return 100;
+          }
+          return newProgress;
+        });
+      }, interval);
+    }
+    
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [isOwned, timerRunning, property.time]);
+
+  const handleCollectRent = () => {
+    collectRent(property);
+    // Restart timer
+    setTimerRunning(true);
+  };
   
   return (
     <Card className="property-card mb-4 overflow-hidden">
@@ -39,9 +78,13 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
               <>
                 <Button 
                   size="sm" 
-                  onClick={() => collectRent(property)}
+                  onClick={handleCollectRent}
                   variant="outline"
+                  disabled={progress < 100 && timerRunning}
                 >
+                  {progress < 100 && timerRunning ? (
+                    <Clock className="w-4 h-4 mr-1" />
+                  ) : null}
                   Rent
                 </Button>
                 <Button 
@@ -63,6 +106,13 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
             )}
           </div>
         </div>
+        
+        {/* Add progress bar */}
+        {isOwned && (
+          <div className="mt-2">
+            <Progress value={progress} className="h-2" />
+          </div>
+        )}
       </CardContent>
     </Card>
   );
