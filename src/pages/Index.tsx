@@ -1,13 +1,21 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import React from 'react';
+import { GameProvider } from '../context/GameContext';
+import GameScreen from '../components/GameScreen';
 
 const Index = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
+    <GameProvider>
+      <div className="max-w-lg mx-auto bg-gray-100 min-h-screen">
+        <div className="flex items-center justify-center py-2 bg-gray-200 border-b border-gray-300">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 bg-gray-300 rounded-full"></div>
+            <div className="text-gray-700 text-sm">f6.onrender.com</div>
+          </div>
+        </div>
+        <GameScreen />
       </div>
-    </div>
+    </GameProvider>
   );
 };
 
