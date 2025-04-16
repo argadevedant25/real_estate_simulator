@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Property } from '../data/properties';
 import { useGame } from '../context/GameContext';
 import { Button } from './ui/button';
@@ -10,39 +10,10 @@ interface PropertyCardProps {
 }
 
 const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
-  const { buyProperty, money, ownedProperties } = useGame();
-  const [timeLeft, setTimeLeft] = useState<number>(0);
-  const [progress, setProgress] = useState<number>(0);
+  const { buyProperty, money, ownedProperties, collectRent } = useGame();
   const canBuy = money >= property.cost;
   
   const isOwned = ownedProperties.some(p => p.id === property.id);
-  
-  useEffect(() => {
-    let interval: NodeJS.Timeout | null = null;
-    
-    if (isOwned) {
-      // Reset timer when property is first owned
-      setTimeLeft(property.time);
-      
-      interval = setInterval(() => {
-        setTimeLeft(prevTime => {
-          const newTime = prevTime - 1;
-          // Calculate progress percentage
-          const progressPercent = 100 - (newTime / property.time * 100);
-          setProgress(progressPercent);
-          
-          if (newTime <= 0) {
-            return property.time; // Reset timer when it reaches 0
-          }
-          return newTime;
-        });
-      }, 1000);
-    }
-    
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [isOwned, property.time]);
   
   return (
     <Card className="property-card mb-4 overflow-hidden">
@@ -63,8 +34,24 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
             </div>
           </div>
           
-          <div>
-            {!isOwned && (
+          <div className="flex gap-2">
+            {isOwned ? (
+              <>
+                <Button 
+                  size="sm" 
+                  onClick={() => collectRent(property)}
+                  variant="outline"
+                >
+                  Rent
+                </Button>
+                <Button 
+                  size="sm"
+                  variant="secondary"
+                >
+                  Manage
+                </Button>
+              </>
+            ) : (
               <Button 
                 size="sm"
                 onClick={() => buyProperty(property)}
@@ -76,20 +63,6 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
             )}
           </div>
         </div>
-        
-        {isOwned && (
-          <div className="mt-3">
-            <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-green-500 rounded-full transition-all duration-1000" 
-                style={{ width: `${progress}%` }}
-              ></div>
-            </div>
-            <div className="text-xs text-center mt-1 text-gray-500">
-              Next rent: {timeLeft}s
-            </div>
-          </div>
-        )}
       </CardContent>
     </Card>
   );

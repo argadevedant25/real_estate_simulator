@@ -35,9 +35,8 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
   const [activeCategory, setActiveCategory] = useState<string>("starter");
   const [savedAmount, setSavedAmount] = useState<number>(10);
   
-  // Ref to store all property income intervals
-  const incomeIntervalsRef = useRef<Record<string, NodeJS.Timeout>>({});
-
+  // We'll remove the automatic income intervals since we're using manual collection
+  
   // Load game state from localStorage on initial render
   useEffect(() => {
     const savedState = localStorage.getItem('propertyGameState');
@@ -48,19 +47,7 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
       setOwnedProperties(ownedProperties);
       setActiveCategory(activeCategory);
       setSavedAmount(savedAmount);
-      
-      // Start income generation for all owned properties
-      ownedProperties.forEach(property => {
-        startPropertyIncome(property);
-      });
     }
-    
-    // Cleanup function to clear all intervals when component unmounts
-    return () => {
-      Object.values(incomeIntervalsRef.current).forEach(interval => {
-        clearInterval(interval);
-      });
-    };
   }, []);
 
   // Save game state to localStorage whenever it changes
@@ -95,28 +82,10 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
           return prevOwnedProperties;
         }
         
-        // Add the property and start income generation
-        const updatedProperties = [...prevOwnedProperties, property];
-        startPropertyIncome(property);
-        return updatedProperties;
+        // Add the property
+        return [...prevOwnedProperties, property];
       });
     }
-  };
-
-  const startPropertyIncome = (property: Property) => {
-    // Clear any existing interval for this property
-    if (incomeIntervalsRef.current[property.id]) {
-      clearInterval(incomeIntervalsRef.current[property.id]);
-    }
-    
-    // Set up new interval for automatic income
-    const interval = setInterval(() => {
-      addMoney(property.rent);
-      console.log(`Earned ${property.rent} from ${property.name}`);
-    }, property.time * 1000);
-    
-    // Store the interval ID
-    incomeIntervalsRef.current[property.id] = interval;
   };
 
   const saveMoney = (amount: number) => {
