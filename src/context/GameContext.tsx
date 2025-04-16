@@ -100,8 +100,6 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
         startPropertyIncome(property);
         return updatedProperties;
       });
-    } else {
-      alert("Not enough money to buy this property!");
     }
   };
 

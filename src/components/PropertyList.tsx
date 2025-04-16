@@ -5,7 +5,7 @@ import PropertyCard from './PropertyCard';
 import { useGame } from '../context/GameContext';
 
 const PropertyList: React.FC = () => {
-  const { activeCategory, ownedProperties } = useGame();
+  const { activeCategory } = useGame();
   
   const currentCategory = propertyCategories.find(
     category => category.id === activeCategory
@@ -18,9 +18,11 @@ const PropertyList: React.FC = () => {
   return (
     <div className="px-2 py-4">
       <h2 className="text-lg font-semibold mb-4">{currentCategory.name}</h2>
-      {currentCategory.properties.map((property) => (
-        <PropertyCard key={property.id} property={property} />
-      ))}
+      <div className="space-y-4">
+        {currentCategory.properties.map((property) => (
+          <PropertyCard key={property.id} property={property} />
+        ))}
+      </div>
     </div>
   );
 };
